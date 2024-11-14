@@ -1,0 +1,104 @@
+BUILD PROMPTS:
+
+Five TASKS follow that describe rest webserver built in Elixir and served from a docker container.  The docker file should include a Postrgres database, not just the client, for persistance.   Use a single container for the webserver and database without docker-compose.  container should be started with docker build and docker run, not docker-compose.  Follow the rule below for guidance in the RULES section below.
+
+TASK 1:
+ Use Plug Cowboy for the http server, create an HTTP endpoint in Elixir that, upon each request, returns a JSON response with 2 values; A random temperature between 0 and 100 degrees Fahrenheit and The current timestamp in UTC format.  The output should be a json response, example: {"temperature": 72, "timestamp":
+"2024-11-12T14:30:00Z"}.
+
+TASK 2:
+include a db_setup function, written in Elixir, that is callable from the command line.   The db_setup function should use Ecto to Connect to the PostgreSQL database described obove and create a table named: "temperatures" with two columns (one column for temperature and one column to store the timestamp).   Only create the temperatures table if it doesn't already exist.  Output a log statement that confirms "temperatures table already exists" or "temperatures table created".  This function should be idempotent.  This command line function should be run upon app start/docker run as a single step in a docker file
+
+TASK 3:
+include another Elixir function "insert_function", callable from the command line, that:
+ Fetches the temperature and timestamp from the HTTP endpoint created in TASK 1.
+ Inserts the fetched temperature and timestamp into the postgresql "temperatures" table created in TASK2.  add log statements to confirm that both values were successfully inserted into the database.
+
+TASK 4: 
+create another Elixer function "loop_function" calls the function created in TASK 3 above in a loop with 10 iterations.  return a log statement confirming how many rows were added to the postgres database.
+
+TASK 5:
+Provide a README.md or similar file that includes:
+Project Overview: A summary of each deliverable, what it does, and the
+sequence to execute them for testing.
+Setup Instructions: Steps for setting up the project, including PostgreSQL
+configuration and any necessary dependencies.
+Execution Commands: Detailed instructions on how to run each function using the
+command line from both outside and inside the container, along with example outputs.
+
+The code should be clear enough for an experienced software engineer new to Elixir to reason about.  Keep the dockerfile clear and simple ignoring security concerns using the default bridge network for seamless communication.  
+
+
+
+RULES
+make sure the docker container includes the postgres database, not just the client.  be sure all requirements are satisfied inside the docker container.  I do not have mix installed on my locally.
+
+we should be able to run a curl command to get the time and temperature.  we use a command line for the other functions.  
+
+The docker container should remain in a running state until terminated.  
+include all the relevant sample commands in the readme.
+include the docker build command in the readme.
+make sure all elixir functions are defined inside modules
+ensure all function definitions, including private ones, are properly encapsulated within their respective modules
+use a moduel for the mix.exs file
+
+
+
+PROMPT:
+tasks 3 and four share the same file name.  can you fix the loop function?
+
+PROMPT:
+rebuild the lib/weather_app/temperature_operations.ex with the proper insert_temperature function
+
+PROMPT:
+did we include a rest endpoint to retrieve the temp and time in json format as specified above?
+
+PROMPT:
+and where is the dockerfile?
+
+PROMPT:
+error: undefined function handle_successful_response/1 (expected WeatherApp.TemperatureOperations to define such a function or for it to be imported, but none are available)
+
+PROMPT:
+lets make sure the docker container remains open to accept http requests and docker exec command as described above
+
+PROMPT:
+that mix.exs seems to be missing dependencies and a project section,
+
+PROMPT:
+Running the docker exec weather_app mix run -e "IO.puts Application.started_applications()". command produces:
+
+docker exec weather_app mix run -e "IO.puts Application.started_applications()". 
+returns Failed to start Ranch listener WeatherApp.Endpoint.HTTP in :ranch_tcp:listen([cacerts: :..., key: :..., cert: :..., port: 4000]) for reason :eaddrinuse (address already in use)
+
+ Due to docker run command is attached to that port already. Update relevant modules to account for this.  Keep it simple, do not overcomplicate or introduce new logic.
+
+
+DEBUGGING PROMPTS:
+
+be sure to fix the   * 1st argument: the table identifier does not refer to an existing ETS table.  I am using docker exec weather_app mix run --no-start -e "WeatherApp.TemperatureOperations.insert_temperature()".  ommitting --no-start causes a earinuse port conflict on 4000 because the same webserver is already listening on that port.
+
+
+add a debugging statements to return the table identifier value for the existing ETS value
+
+
+
+WINNER WINNER,  LET THE LLM DO ITS JOB.
+ 00:47:52.311 [debug] ETS tables after Repo start: [:logger, :ac_tab, :code_server, #Reference<0.3393000224.3668049923.71949>, :inet_db, :inet_cache, :inet_hosts_byname, :inet_hosts_byaddr, :inet_hosts_file_byname, :inet_hosts_file_byaddr, :inet_sockets, #Reference<0.3393000224.3668049923.72026>, :global_locks, :global_names, :global_names_ext, :global_pid_names, :global_pid_ids, :global_lost_connections, :global_node_resources, :elixir_config, :elixir_modules, Mix.State, Mix.TasksServer, :ssl_pem_cache, #Reference<0.3393000224.3668049923.73246>, #Reference<0.3393000224.3668049923.73247>, #Reference<0.3393000224.3668049923.73248>, #Reference<0.3393000224.3668049923.73249>, #Reference<0.3393000224.3668049923.73250>, #Reference<0.3393000224.3668049923.73251>, :dtls_listener_sup, :httpc_manager__session_db, :httpc_manager__handler_db, #Reference<0.3393000224.3668049923.73377>, :httpc_hex__session_db, :httpc_hex__handler_db, #Reference<0.3393000224.3668049923.73411>, :telemetry_handler_table, Ecto.Repo.Registry, Postgrex.TypeManager, #Reference<0.3393000224.3668049923.75293>, #Reference<0.3393000224.3668049923.75294>, Postgrex.Parameters, Postgrex.SCRAM.LockedCache, #Reference<0.3393000224.3668049923.75350>, #Reference<0.3393000224.3668049923.75352>]
+** (ArgumentError) errors were found at the given arguments:
+
+  * 1st argument: the table identifier does not refer to an existing ETS table
+
+    (stdlib 6.1.2) :ets.lookup_element(:hackney_config, :mod_metrics, 2)
+    (hackney 1.20.1) /app/deps/hackney/src/hackney_metrics.erl:27: :hackney_metrics.get_engine/0
+    (hackney 1.20.1) /app/deps/hackney/src/hackney_connect.erl:75: :hackney_connect.create_connection/5
+    (hackney 1.20.1) /app/deps/hackney/src/hackney_connect.erl:44: :hackney_connect.connect/5
+    (hackney 1.20.1) /app/deps/hackney/src/hackney.erl:335: :hackney.request/5
+    (httpoison 1.8.2) lib/httpoison/base.ex:846: HTTPoison.Base.request/6
+    (weather_app 0.1.0) lib/weather_app/temperature_operations.ex:32: WeatherApp.TemperatureOperations.insert_temperature/0
+
+
+
+
+
+
