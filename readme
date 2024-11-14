@@ -1,0 +1,82 @@
+# Elixir Weather App
+
+## Project Overview
+
+This is a simple Elixir-based weather application that provides random temperature data and stores it in a PostgreSQL database. The application is containerized using Docker for easy deployment and management.
+
+## Setup Instructions
+
+1. Ensure you have Docker installed on your system.
+2. Clone this repository to your local machine.
+
+## Building and Running the Application
+
+Docker Management Commands
+Here are a few useful commands for managing the Docker container:
+
+Stop the container:
+
+## 
+docker stop weather_app
+Start the container:
+
+## 
+docker start weather_app
+Remove the container:
+
+## 
+docker rm weather_app
+View logs:
+
+## 
+docker logs weather_app
+
+## 
+docker build -t elixir_weather_app .
+Running the Container
+To run the container with the application:
+
+## 
+docker run -d -p 4000:4000 --name weather_app elixir_weather_app
+This will start the container in detached mode and map port 4000 on your local machine to port 4000 in the container.
+
+Accessing the Application
+The application exposes an HTTP endpoint to get the temperature data. You can make a curl request to retrieve the random temperature:
+
+## 
+curl http://localhost:4000/temperature
+The response will be a JSON object with the temperature data:
+
+json
+{
+  "temperature": 72,
+  "timestamp": "2024-11-12T14:30:00Z"
+}
+
+##
+Database Setup
+Before running the application, you may need to set up the PostgreSQL database and insert some initial data.  
+**Note, this is done on app start.
+
+##
+To set up the database, run the following command:
+docker exec weather_app mix run --no-start -e "WeatherApp.DBSetup.setup()"  
+Run Database Setup
+
+
+## 
+If you want to insert random temperature data in a loop at regular intervals, use the following command:
+docker exec weather_app mix run --no-start -e "WeatherApp.TemperatureOperations.insert_temperature()"
+
+## 
+This will continuously insert random temperature data into the database.
+docker exec weather_app mix run --no-start -e "WeatherApp.TemperatureOperations.loop_insert()"
+Continuous Data Insertion (Loop)
+
+
+
+
+
+
+
+
